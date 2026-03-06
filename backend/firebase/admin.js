@@ -18,7 +18,7 @@ function getAdmin() {
     // }
     if (process.env.FIREBASE_SERVICE_ACCOUNT_B64) {
         const json = Buffer.from(process.env.FIREBASE_SERVICE_ACCOUNT_B64, 'base64')
-            .toString('utf8')
+            .toString('utf8')  
             .replace(/\r\n/g, '\n')  // ← add this
             .replace(/\r/g, '\n')    // ← and this
         credential = admin.credential.cert(JSON.parse(json))
