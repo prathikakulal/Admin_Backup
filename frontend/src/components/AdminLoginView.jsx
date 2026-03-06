@@ -6,11 +6,11 @@ import { signInWithEmailAndPassword, signOut } from 'firebase/auth'
 import { doc, getDoc } from 'firebase/firestore'
 
 export default function AdminLoginView({ onLoginSuccess }) {
-  const [email, setEmail]   = useState('')
-  const [pass, setPass]     = useState('')
-  const [showPw, setShow]   = useState(false)
-  const [error, setError]   = useState('')
-  const [loading, setLoad]  = useState(false)
+  const [email, setEmail] = useState('')
+  const [pass, setPass] = useState('')
+  const [showPw, setShow] = useState(false)
+  const [error, setError] = useState('')
+  const [loading, setLoad] = useState(false)
   const [shaking, setShake] = useState(false)
 
   const shake = () => { setShake(true); setTimeout(() => setShake(false), 400) }
@@ -33,13 +33,14 @@ export default function AdminLoginView({ onLoginSuccess }) {
       onLoginSuccess(snap.data())
     } catch (e) {
       const msgs = {
-        'auth/user-not-found':     'No account found with this email.',
-        'auth/wrong-password':     'Incorrect password. Please try again.',
-        'auth/invalid-email':      'Please enter a valid email address.',
-        'auth/too-many-requests':  'Too many attempts. Try again later.',
+        'auth/user-not-found': 'No account found with this email.',
+        'auth/wrong-password': 'Incorrect password. Please try again.',
+        'auth/invalid-email': 'Please enter a valid email address.',
+        'auth/too-many-requests': 'Too many attempts. Try again later.',
         'auth/invalid-credential': 'Invalid email or password.',
       }
-      setError(msgs[e.code] || 'Login failed. Please try again.')
+      console.error('🔥 Firebase login error — code:', e.code, '| message:', e.message)
+      setError(msgs[e.code] || `Login failed. (${e.code})`)
       shake()
     }
     setLoad(false)

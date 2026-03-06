@@ -1,5 +1,5 @@
 // src/views/AdminPage.jsx
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   LayoutDashboard, Users, Link2, Shield, CheckCircle2,
@@ -8,10 +8,11 @@ import {
 } from 'lucide-react'
 import { db, auth } from '../firebase/config.js'
 import {
-  collection, onSnapshot, doc, updateDoc, deleteDoc,
-  query, orderBy, increment,
+  doc, updateDoc, deleteDoc, increment,
 } from 'firebase/firestore'
 import { signOut } from 'firebase/auth'
+
+const API = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000'
 import { Toast } from '../components/UI.jsx'
 import AdminLoginView from '../components/AdminLoginView.jsx'
 import OverviewView  from './OverviewView.jsx'
@@ -44,26 +45,43 @@ export default function AdminPage() {
   const [links, setLinks]               = useState([])
   const [toast, setToast]               = useState(null)
   const [clock, setClock]               = useState(new Date())
+  const [fetchError, setFetchError]     = useState(null)
+  const [loading, setLoading]           = useState(false)
 
   useEffect(() => {
     const id = setInterval(() => setClock(new Date()), 1000)
     return () => clearInterval(id)
   }, [])
 
-  useEffect(() => {
+  // ── Fetch data from backend API (Admin SDK — bypasses Firestore rules) ──
+  const fetchData = useCallback(async () => {
     if (!authed) return
-    const u1 = onSnapshot(
-      query(collection(db, 'users'), orderBy('createdAt', 'desc')),
-      snap => setOfficers(snap.docs.map(d => ({ uid: d.id, ...d.data() }))),
-      err => console.error('users:', err.message)
-    )
-    const u2 = onSnapshot(
-      query(collection(db, 'trackingLinks'), orderBy('createdAt', 'desc')),
-      snap => setLinks(snap.docs.map(d => ({ id: d.id, ...d.data() }))),
-      err => console.error('links:', err.message)
-    )
-    return () => { u1(); u2() }
+    setLoading(true)
+    try {
+      const [usersRes, linksRes] = await Promise.all([
+        fetch(`${API}/api/admin/users`),
+        fetch(`${API}/api/admin/links`),
+      ])
+      if (!usersRes.ok) throw new Error(`Users fetch failed: ${usersRes.status} ${usersRes.statusText}`)
+      if (!linksRes.ok) throw new Error(`Links fetch failed: ${linksRes.status} ${linksRes.statusText}`)
+      const [usersData, linksData] = await Promise.all([usersRes.json(), linksRes.json()])
+      setOfficers(usersData)
+      setLinks(linksData)
+      setFetchError(null)
+    } catch (err) {
+      console.error('Data fetch error:', err.message)
+      setFetchError(err.message)
+    } finally {
+      setLoading(false)
+    }
   }, [authed])
+
+  // Initial fetch + 30-second polling interval
+  useEffect(() => {
+    fetchData()
+    const id = setInterval(fetchData, 30_000)
+    return () => clearInterval(id)
+  }, [fetchData])
 
   const showToast = (msg, ok = true) => setToast({ msg, ok })
 
@@ -107,6 +125,8 @@ export default function AdminPage() {
     sessionStorage.removeItem('adminProfile')
     setAdminProfile(null)
     setAuthed(false)
+    setOfficers([])
+    setLinks([])
   }
 
   const pending = officers.filter(o => o.status === 'pending').length
@@ -240,8 +260,35 @@ export default function AdminPage() {
                   {new Date().toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
                 </div>
               </div>
-              <button className="abtn abtn-g" onClick={() => window.location.reload()}><RefreshCw size={12} /> Refresh</button>
+              <button className="abtn abtn-g" onClick={fetchData} disabled={loading}>
+                <RefreshCw size={12} style={{ animation: loading ? 'spin 1s linear infinite' : 'none' }} /> {loading ? 'Loading…' : 'Refresh'}
+              </button>
             </div>
+            {fetchError && (
+              <div style={{
+                marginBottom: 18,
+                padding: '12px 16px',
+                background: 'rgba(255,59,48,.08)',
+                border: '1px solid rgba(255,59,48,.3)',
+                borderRadius: 10,
+                display: 'flex',
+                alignItems: 'flex-start',
+                gap: 10,
+              }}>
+                <AlertTriangle size={15} color="#ff3b30" style={{ flexShrink: 0, marginTop: 1 }} />
+                <div>
+                  <div style={{ fontFamily: "'DM Sans',sans-serif", fontSize: 13, color: '#ff3b30', fontWeight: 600, marginBottom: 3 }}>
+                    Could not load data from database
+                  </div>
+                  <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 11, color: '#ff3b3099' }}>
+                    {fetchError}
+                  </div>
+                  <div style={{ fontFamily: "'DM Sans',sans-serif", fontSize: 11, color: '#ff3b3099', marginTop: 4 }}>
+                    Make sure the backend server is running at <code>{API}</code> and Firestore Security Rules allow admin reads.
+                  </div>
+                </div>
+              </div>
+            )}
             {views[tab]}
           </main>
         </div>
