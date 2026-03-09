@@ -78,11 +78,9 @@ export default function AdminPage() {
     }
   }, [authed])
 
-  // Initial fetch + 30-second polling interval
+  // Initial fetch on mount
   useEffect(() => {
     fetchData()
-    const id = setInterval(fetchData, 30_000)
-    return () => clearInterval(id)
   }, [fetchData])
 
   const showToast = (msg, ok = true) => setToast({ msg, ok })
@@ -159,7 +157,7 @@ export default function AdminPage() {
     credits: <CreditsView officers={officers} onAddCredit={handleAddCredit} onDeductCredit={handleDeductCredit} onDelete={handleDelete} />,
     coupons: <CouponsView showToast={showToast} />,
     activity: <ActivityView />,
-    payments: <PaymentsView showToast={showToast} />,
+    payments: <PaymentsView showToast={showToast} officers={officers} />,
   }
 
   return (

@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react'
 import { Ticket, RefreshCw, Plus, XCircle, Trash2, CheckCircle2, Copy } from 'lucide-react'
 import { db } from '../firebase/config.js'
-import { collection, onSnapshot, doc, updateDoc, deleteDoc, query, orderBy, addDoc, serverTimestamp } from 'firebase/firestore'
+import { collection, onSnapshot, doc, updateDoc, deleteDoc, query, orderBy, addDoc, serverTimestamp, limit } from 'firebase/firestore'
 import { SBadge } from '../components/UI.jsx'
 import { P } from '../styles/theme.js'
 
@@ -17,7 +17,7 @@ export default function CouponsView({ showToast }) {
 
   useEffect(() => {
     const unsub = onSnapshot(
-      query(collection(db, 'coupons'), orderBy('createdAt', 'desc')),
+      query(collection(db, 'coupons'), orderBy('createdAt', 'desc'), limit(100)),
       snap => setCoupons(snap.docs.map(d => ({ id: d.id, ...d.data() }))),
       err => console.error('coupons:', err.message)
     )

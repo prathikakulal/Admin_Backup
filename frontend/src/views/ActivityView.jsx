@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react'
 import { Search, Calendar, Trash2 } from 'lucide-react'
 import { db } from '../firebase/config.js'
-import { collection, onSnapshot, doc, deleteDoc, query, orderBy } from 'firebase/firestore'
+import { collection, onSnapshot, doc, deleteDoc, query, orderBy, limit } from 'firebase/firestore'
 import { SBadge, fmt } from '../components/UI.jsx'
 import { P } from '../styles/theme.js'
 
@@ -13,7 +13,7 @@ export default function ActivityView() {
 
   useEffect(() => {
     const unsub = onSnapshot(
-      query(collection(db, 'activityLogs'), orderBy('timestamp', 'desc')),
+      query(collection(db, 'activityLogs'), orderBy('timestamp', 'desc'), limit(100)),
       snap => setLogs(snap.docs.map(d => ({ id: d.id, ...d.data() }))),
       err => console.error('activityLogs:', err.message)
     )

@@ -2,27 +2,22 @@
 import { useState, useEffect } from 'react'
 import { CreditCard, Search, Zap, CheckCircle2, Plus, Clock, Trash2 } from 'lucide-react'
 import { db } from '../firebase/config.js'
-import { collection, onSnapshot, doc, updateDoc, deleteDoc, query, orderBy, addDoc, serverTimestamp, increment } from 'firebase/firestore'
+import { collection, onSnapshot, doc, updateDoc, deleteDoc, query, orderBy, addDoc, serverTimestamp, increment, limit } from 'firebase/firestore'
 import { StatCard, SBadge, fmt } from '../components/UI.jsx'
 import { P } from '../styles/theme.js'
 
-export default function PaymentsView({ showToast }) {
+export default function PaymentsView({ showToast, officers }) {
   const [payments, setPayments] = useState([])
   const [q, setQ]               = useState('')
   const [form, setForm]         = useState({ officerEmail: '', amount: '', credits: '', note: '', txId: '' })
-  const [officers, setOfficers] = useState([])
 
   useEffect(() => {
     const u1 = onSnapshot(
-      query(collection(db, 'payments'), orderBy('paidAt', 'desc')),
+      query(collection(db, 'payments'), orderBy('paidAt', 'desc'), limit(100)),
       snap => setPayments(snap.docs.map(d => ({ id: d.id, ...d.data() }))),
       err => console.error('payments:', err.message)
     )
-    const u2 = onSnapshot(
-      query(collection(db, 'users'), orderBy('createdAt', 'desc')),
-      snap => setOfficers(snap.docs.map(d => ({ uid: d.id, ...d.data() })))
-    )
-    return () => { u1(); u2() }
+    return () => u1()
   }, [])
 
   const handleAddPayment = async () => {

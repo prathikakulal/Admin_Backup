@@ -34,7 +34,7 @@ router.get('/users', async (_req, res) => {
 router.get('/links', async (_req, res) => {
   try {
     const db   = getAdmin().firestore()
-    const snap = await db.collection('trackingLinks').orderBy('createdAt', 'desc').get()
+    const snap = await db.collection('trackingLinks').orderBy('createdAt', 'desc').limit(200).get()
     const data = snap.docs.map(d => ({ id: d.id, ...d.data() }))
     res.json(data)
   } catch (err) {
