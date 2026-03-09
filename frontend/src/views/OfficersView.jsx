@@ -64,7 +64,7 @@ export default function OfficersView({ officers, onApprove, onReject, onAddCredi
                       className="ati" style={{ width: 48, padding: '4px 7px', fontSize: 12 }}
                     />
                     <button className="aib" style={{ color: P.green }} onClick={() => { onAddCredit(o.uid, parseInt(amt[o.uid] || 1)); setAmt(p => ({ ...p, [o.uid]: '' })) }}><Plus size={12} /></button>
-                    <button className="aib" style={{ color: P.red }} onClick={() => onDeductCredit(o.uid)}><Minus size={12} /></button>
+                    <button className="aib" style={{ color: P.red }} onClick={() => { onDeductCredit(o.uid, parseInt(amt[o.uid] || 1)); setAmt(p => ({ ...p, [o.uid]: '' })) }}><Minus size={12} /></button>
                   </div>
                 </td>
                 <td style={{ padding: '12px 14px', fontFamily: "'JetBrains Mono',monospace", fontSize: 11, color: P.muted }}>
