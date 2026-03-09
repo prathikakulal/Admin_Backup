@@ -17,10 +17,16 @@ function getAdmin() {
     //     credential = admin.credential.cert(JSON.parse(json))
     // }
     if (process.env.FIREBASE_SERVICE_ACCOUNT_B64) {
-        const json = Buffer.from(process.env.FIREBASE_SERVICE_ACCOUNT_B64, 'base64')
-            .toString('utf8')  
-            .replace(/\r\n/g, '\n')  // ← add this
-            .replace(/\r/g, '\n')    // ← and this
+        let json = Buffer.from(process.env.FIREBASE_SERVICE_ACCOUNT_B64, 'base64').toString('utf8')
+        
+        // Strip out invisible BOM, trailing null characters, or extra whitespace
+        // by finding the first '{' and the last '}'
+        const firstBrace = json.indexOf('{')
+        const lastBrace = json.lastIndexOf('}')
+        if (firstBrace !== -1 && lastBrace !== -1) {
+            json = json.substring(firstBrace, lastBrace + 1)
+        }
+
         credential = admin.credential.cert(JSON.parse(json))
     } else if (
         process.env.FIREBASE_SERVICE_ACCOUNT_PATH &&
