@@ -12,7 +12,7 @@ export default function ActivityView() {
   const [q, setQ] = useState('')
 
   const [loading, setLoading] = useState(true)
-  
+
   const API = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000'
 
   useEffect(() => {
