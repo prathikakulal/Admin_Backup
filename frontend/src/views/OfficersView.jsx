@@ -5,7 +5,7 @@ import { SBadge } from '../components/UI.jsx'
 import { P } from '../styles/theme.js'
 
 export default function OfficersView({ officers, onApprove, onReject, onAddCredit, onDeductCredit, onDelete }) {
-  const [q, setQ]     = useState('')
+  const [q, setQ] = useState('')
   const [amt, setAmt] = useState({})
 
   const rows = officers.filter(o =>

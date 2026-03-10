@@ -1,4 +1,3 @@
-
 // src/views/AdminPage.jsx
 //hello bendekai
 import { useState, useEffect, useCallback } from 'react'
@@ -129,7 +128,7 @@ export default function AdminPage() {
     setLinks([])
   }
 
-  const pending = officers.filter(o => o.status === 'pending').length
+  const pending = officers.filter(o => o.status === 'rejected').length
 
   // ── Inject global styles ──
   useEffect(() => {
@@ -210,9 +209,6 @@ export default function AdminPage() {
                 >
                   <Icon size={15} style={{ flexShrink: 0 }} />
                   {sideOpen && <span style={{ flex: 1 }}>{item.label}</span>}
-                  {item.id === 'officers' && pending > 0 && sideOpen && (
-                    <span style={{ background: P.yellow, color: P.bg, borderRadius: 10, padding: '1px 7px', fontSize: 10, fontWeight: 700, fontFamily: "'JetBrains Mono',monospace" }}>{pending}</span>
-                  )}
                 </button>
               )
             })}

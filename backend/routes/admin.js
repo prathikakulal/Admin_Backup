@@ -128,7 +128,7 @@ router.get('/stats', async (_req, res) => {
       db.collection('users').count().get(),
       db.collection('trackingLinks').count().get(),
       db.collection('users').where('status', '==', 'approved').count().get(),
-      db.collection('users').where('status', '==', 'pending').count().get()
+      db.collection('users').where('status', '==', 'rejected').count().get()
     ])
 
     // For sums (credits, captures), we still need the docs, but we'll cap them to recent active ones
